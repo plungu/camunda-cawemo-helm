@@ -1,0 +1,387 @@
+= Camunda Cawemo HELM Charts
+Doc Writer <paul.lungu@camunda.com>
+v1.0, 2020-08-13
+:toc:
+
+== Goals
+- Simple and understandable HELM Cawemo example
+- Help understand common configuration and architectural concepts
+- Good documentation and example to assist in getting Cawemo running quickly in Kubernetes
+- *NOT* intended as a production ready configuration
+
+
+== What is configured in this chart
+- [x] Cawemo
+- [x] Cawemo EE Repo Pull
+- [x] Cawemo License
+- [x] Load Balancer with sticky sessions
+- [x] Elastic Search
+
+
+== How does it work
+
+IMPORTANT: The configs in this chart are preconfigured defaults and serve as a quick reference for understanding. *You may need to change and adjust things to suit your use-case, infra, architecture, etc ...*
+
+- The HELM chart is an install descriptor to install Cawemo on Kubernetes. HELM can do many things to help install and manage infra on Kubernetes.
+- The primary configuration point is the values.yaml. It should allow you to get a basic Cawemo configuration installed and running with little to no customizations.
+- You still need to know how to debug on Kubernetes. See the https://kubernetes.io/docs/tasks/debug-application-cluster/debug-application/[Kubernetes Docs] for help.
+- While this chart defines how Cawemo is installed other components need to be installed in your Kubernetes cluster to make Cawemo work. See <<steps-to-run, Setting up Infra>> to install the other components.
+- You can find more on HELM here https://helm.sh/docs/intro/quickstart/[Helm Quickstart]
+
+== [[steps-to-run]]Steps to run this HELM chart
+
+==== *STOP* before you run it
+====
+*Step 0. <<install-helm, Install HELM and Kubernetes>>* if not already installed
+
+*Step 1. <<install-ingress-controller, Install Ingress Contorller>> to configure the loadbalaner ingress controller*
+
+*Step 2. <<configure-external-database, Configure PostgreSQL>> in the Kubernetes cluster*
+
+*Step 3. <<cawemo-version, Configure Cawemo Version>>*
+
+*Step 4. <<cawemo-connections, Configure Cawemo Connections>>*
+
+*Step 5. <<cawemo-license, Install Cawemo License>>*
+
+*Step 6. <<cawemo-run, Run Cawemo>>*
+====
+
+
+== [[setup-infra]] Setup Infra and Architecture for Cawemo
+
+==== [[install-helm]] *Step 0:* Install HELM and Kubernetes
+====
+- You can find more on HELM here https://helm.sh/docs/intro/quickstart/[Helm Quickstart]
+- https://kubernetes.io/docs/setup/[Kubernetes Getting Started]
+- Try https://www.docker.com/products/docker-desktop[Docker Desktop] imo it's the quickest way to get started with Kubernetes
+
+- Tested with HELM
+** `version.BuildInfo{Version:"v3.5.3", GitCommit:"041ce5a2c17a58be0fcd5f5e16fb3e7e95fea622", GitTreeState:"dirty", GoVersion:"go1.16"}`
+
+- Tested with Kubernetes
+** `Client Version: version.Info{Major:"1", Minor:"21", GitVersion:"v1.21.2", GitCommit:"092fbfbf53427de67cac1e9fa54aaa09a28371d7", GitTreeState:"clean", BuildDate:"2021-06-16T12:59:11Z", GoVersion:"go1.16.5", Compiler:"gc", Platform:"darwin/amd64"}`
+
+** `Server Version: version.Info{Major:"1", Minor:"21", GitVersion:"v1.21.2", GitCommit:"092fbfbf53427de67cac1e9fa54aaa09a28371d7", GitTreeState:"clean", BuildDate:"2021-06-16T12:53:14Z", GoVersion:"go1.16.5", Compiler:"gc", Platform:"linux/amd64"}`
+
+====
+
+---
+==== [[install-ingress-controller]] *Step 1:* Install Ingress Controller with Sticky Sessions
+====
+IMPORTANT: Kubernetes does not come with an implementation of a LoadBalancer or a Reverse Proxy for Ingress. The Ingerss resource allows you to configure a Controller for your needs. It's important to understand what you need from an inrgess resource then you can choose the appropriate Controller to install. There are a variety of vendors.
+
+*Tested with* https://kubernetes.github.io/ingress-nginx/deploy/#docker-for-mac
+
+*Install the NGINX Ingress Controller*
+----
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.44.0/deploy/static/provider/cloud/deploy.yaml
+----
+====
+
+---
+
+===== Configure the Ingress resource for Nginx with sticky sessions
+====
+Update the values.yaml and configure the Ingress Resource to tell the LoadBalancer (the NGINX deployment that was installed above) to stick to one Cawemo instance once the user is logged into the webapps.
+
+*Defaults Below*
+[source,yaml]
+----
+  ingress:
+    enabled: true
+    annotations: {
+        nginx.ingress.kubernetes.io/ingress.class: nginx,
+        nginx.ingress.kubernetes.io/affinity: "cookie",
+        nginx.ingress.kubernetes.io/affinity-mode: "persistent",
+        nginx.ingress.kubernetes.io/session-cookie-expires: "172800",
+        nginx.ingress.kubernetes.io/session-cookie-max-age: "172800",
+      }
+      # see more config options https://kubernetes.github.io/ingress-nginx/examples/affinity/cookie/
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: cawemo.127.0.0.1.nip.io
+        paths: ["/"]
+    tls: []
+    #  - secretName: camunda-cawemo-tls
+    #    hosts:
+    #      - camunda-cawemo.local   - camunda-cawemo.local
+
+----
+====
+
+---
+
+===== Increase the replica count of the Nodes
+====
+
+Update the values.yaml and increase the replica count so the load balancer will send requests to both nodes for a user that is not already logged in to web apps.
+
+*Defaults Below*
+[source,yaml]
+----
+general:
+  debug: true
+  replicaCount: 1
+  nameOverride: ""
+  fullnameOverride: ""
+----
+====
+
+---
+
+===== Troubleshoot Kubernetes Resources
+====
+*Troubleshoot Ingress, Pods and Services*
+
+* Check the Service and Ingress endpoints
+** `kubectl describe ingress cawemo-demo-camunda-cawemo`
+** `kubectl describe service cawemo-demo-camunda-cawemo`
+
+* Check the pods
+** `kubectl describe pods cawemo-demo-camunda-cawemo`
+
+* Check that the Service Selectors get the pods
+** `kubectl get pods --show-labels | egrep 'app.kubernetes.io/instance=cawemo-demo,app.kubernetes.io/name=camunda-cawemo'`
+====
+
+---
+
+[[configure-external-database]]
+=== *Step 2:* Configure an External Database
+
+==== *Install IAM PostgreSQL Database in the cluster*
+====
+----
+helm install iam-database --set postgresqlPostgresPassword=workflow, postgresqlUsername=workflow,postgresqlPassword=workflow,postgresqlDatabase=workflow bitnami/postgresql
+----
+====
+==== *Install Cawemo PostgreSQL Database in the cluster*
+IMPORTANT: The database must have a super user configured to install Cawemo. See the https://github.com/bitnami/charts/tree/master/bitnami/postgresql[config options here]
+
+NOTE: the config below will install postgres with the `postgres` superuser and password of `workflow`.
+
+TIP: if your database config is incorrect and you reinstall make sure to delete the PVC first. `kubectl get pvc -l "app=postgresql"`
+
+====
+----
+helm install cawemo-database --set postgresqlPostgresPassword=workflow,postgresqlDatabase=workflow bitnami/postgresql
+----
+====
+Based on: https://artifacthub.io/packages/helm/bitnami/postgresql
+
+---
+
+===== *Create Kubernetes Secret Resource for Postgresql*
+====
+----
+kubectl create secret generic \
+    workflow-database-credentials \
+    --from-literal=DB_USERNAME=workflow \
+    --from-literal=DB_PASSWORD=workflow
+----
+====
+
+---
+
+
+== [[cawemo-setup]]Setup Cawemo
+
+==== [[cawemo-version]] *Step 4:* Configure the version of Cawemo
+IMPORTANT: https://camunda.com/download/enterprise/[Get an enterprise trial to try Cawemo]
+====
+In this case the latest image is used. But we could swap different images and versions.
+
+See the https://registry.camunda.cloud/harbor/projects/4/repositories[Camunda Harbor Repo] if you need a different version of Cawemo.
+
+*Pulling from the Enterprise Repo*
+
+NOTE: you will need your enterprise credentials and an enterprise license for Cawemo.
+
+The version of Cawemo can be changed in this section of the values.yaml.
+
+IMPORTANT: several apps configured in the cluster for Cawemo. See the values.yaml for the configuration of all the apps.
+
+*Defaults Below*
+[source,yaml]
+----
+image:
+  repository: registry.camunda.cloud/cawemo-ee/<<cawemo-app>>
+  tag: 1.5.1
+  pullPolicy: IfNotPresent
+  pullSecrets:
+    - name: camunda-reg-cred
+----
+
+---
+NOTE: If issues arise with pulling the image the workaround is to manually pull the image.
+Run the following commands
+
+ docker login registry.camunda.cloud
+
+ docker pull registry.camunda.cloud/cawemo-ee/cawemo:latest
+
+---
+
+*Configuring the pullSecrets*
+
+TIP: see https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/[Configuring pull secrets kubernetes doc] and https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/[Managing Secrets] for more info
+
+Install the secret and name it camunda-reg-cred
+
+----
+kubectl create secret docker-registry camunda-reg-cred --docker-server=registry.camunda.cloud --docker-username=<<user>> --docker-password=<<password>> --docker-email=<your-email>
+----
+
+TIP: You may need to deref special characters in your passwords i.e. --docker-password=mypassword\!isstrong
+
+Check your secret
+----
+kubectl get secret camunda-reg-cred --output=yaml
+
+kubectl get secret camunda-reg-cred --output="jsonpath={.data.\.dockerconfigjson}" | base64 --decode
+----
+
+====
+
+---
+
+=== *Step 5:* [[cawemo-connections]] Configure Cawemo Connections
+
+*This section is intended to explain and provide insight into the connections Cawemo needs to make to other apps to operate*
+
+
+===== Cawemo Specific Configs
+
+*This section is intended to explain and provide insight into the Cawemo configs that allow you to modify Cawemo*
+
+
+===== ConfigMap for Cawemo Configurations
+
+*The environment-config ConfigMap defined in data-environment.yaml applies the configs to Cawemo*
+
+
+=== *Step 6:* [[cawemo-license]]Configure the Cawemo License
+====
+IMPORTANT: https://camunda.com/download/enterprise/[Get an enterprise trial to try Cawemo]
+
+*Add your license to the data-license.yaml*
+
+*Defaults Below*
+[source,yaml]
+----
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    {{- include "camunda-cawemo.labels" . | nindent 4 }}
+  name: cawemo-license
+stringData:
+  CawemoLicense.txt:
+    --------------- BEGIN CAMUNDA LICENSE KEY ---------------
+
+    ---------------  END CAMUNDA LICENSE KEY  ---------------
+----
+
+*The license Secret mounting definition in the deplyment.yaml*
+This is informational. Nothing to do unless you want to change the mount location or type.
+
+[source,yaml]
+----
+          volumeMounts:
+          - mountPath: /cawemo/config/CawemoLicense.txt
+            subPath: CawemoLicense.txt
+            name: cawemo-license
+
+      volumes:
+      - name: cawemo-license
+        secret:
+          secretName: cawemo-license
+----
+====
+
+==== Troubleshoot volumes, configMaps and secrets
+====
+*Check the secret exists*
+
+ kubectl get secret cawemo-license -o yaml
+
+ kubectl get secret camunda-reg-cred --output=yaml
+
+*Check the secrets are created properly*
+
+ kubectl get secret camunda-reg-cred --output="jsonpath={.data.\.dockerconfigjson}" | base64 --decode
+
+ kubectl get secret cawemo-license --output="jsonpath={.data.CawemoLicense\.txt}"
+
+*Look at the mounted license file* use exec command into pod file system. You should see
+
+ cat config/CawemoLicense.txt
+
+See https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/[Managing Secrets] for more info.
+
+====
+
+
+TIP: For more configuration options see https://github.com/camunda/docker-camunda-cawemo/blob/next/README.md
+
+=== [[cawemo-run]] *Step 7:* Run the Chart
+====
+**Runing the Chart** the following command to install the chart and apply the configurations to the Kubernetes cluster
+----
+helm install cawemo-demo ./charts/camunda-cawemo/
+----
+
+**Change the Chart ** -- When you make changes run the following command to apply the changes to the cluster
+----
+helm upgrade cawemo-demo ./charts/camunda-cawemo/
+----
+
+**Remove the Chart **  -- To remove the installation
+----
+helm uninstall cawemo-demo
+----
+====
+
+
+
+== Whats Next
+- [x] Configure Ingress and Scaling
+- [x] Configuration for EE License (*In Progress*)
+- [x] Configure common Cawemo configs (Elastic, Engine)
+- [ ] Configuration for Secrets Vault (HashiCorp, Spring Cloud Vault)
+- [ ] Configuration for LDAP plugin
+- [ ] Adding an Engine plugin
+- [ ] Configuration for Logging
+** [ ] Configuration for Log Drain
+** [ ] Configuration for ARGO
+** [ ] Configuration for TERRAFORM
+- [ ] Configurations for SSO
+** [ ] with Keycloak
+- [ ] Configure auto-scaling
+- [ ] Configure Cloud Deployments (GKE, AWS, Azure)
+
+
+
+== Based on Camunda Helm
+image:https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/camunda[link=https://artifacthub.io/packages/search?repo=camunda]
+
+*More Info*
+
+- https://docs.camunda.org/cawemo/develop/technical-guide
+- https://artifacthub.io/packages/helm/camunda/camunda-cawemo
+- https://github.com/elastic/helm-charts
+- https://registry.camunda.cloud/harbor/projects/4/repositories
+- https://kubernetes.github.io/ingress-nginx/deploy/#docker-for-mac
+- https://helm.sh/docs/intro/quickstart/
+- https://hub.docker.com/r/camunda/camunda-cawemo
+- https://kubernetes.github.io/ingress-nginx/examples/affinity/cookie/
+- https://github.com/camunda/camunda-helm
+- https://github.com/camunda/docker-camunda-cawemo
+
+
+
+== Project state
+
+This project is in **alpha** phase.

@@ -1,0 +1,29 @@
+{{- if .Values.iam.backend.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "camunda-cawemo.labels" . | nindent 4 }}
+  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.iam.backend.containerName }}
+data:
+  BACKEND_URL: {{ .Values.iam.backend.env.backendUrl }}
+  DATABASE_ENCRYPTION_KEY: {{ .Values.iam.backend.env.dataBaseEncryptionKey }}
+  DB_URL: {{ .Values.iam.backend.env.dbUrl }}
+  DEFAULT_CLIENT_BASE_URL: {{ .Values.iam.backend.env.defaultClientBaseUrl }}
+  DEFAULT_CLIENT_ID: {{ .Values.iam.backend.env.defaultClientId }}
+  DEFAULT_CLIENT_LOGOUT_URL: {{ .Values.iam.backend.env.defaultClientLogoutUrl }}
+  DEFAULT_CLIENT_NAME: {{ .Values.iam.backend.env.defaultClientName }}
+  DEFAULT_CLIENT_SECRET: {{ .Values.iam.backend.env.defaultClientSecret }}
+  EMAIL_NOREPLY_SENDER: {{ .Values.iam.backend.env.emailNoreplySender }}
+  EMAIL_SENDER: {{ .Values.iam.backend.env.emailSender }}
+  EMAIL_SENDER_NAME: {{ .Values.iam.backend.env.emailSenderName }}
+  EMAIL_SUPPORT: {{ .Values.iam.backend.env.emailSupport }}
+  ENFORCE_HTTPS: "{{ .Values.iam.backend.env.enforceHttps }}"
+  FRONTEND_URL: {{ .Values.iam.backend.env.frontEndUrl }}
+  SMTP_HOST: {{ .Values.iam.backend.env.smtpHost }}
+  SMTP_PASSWORD: {{ .Values.iam.backend.env.smtpPassword }}
+  SMTP_PORT: "{{ .Values.iam.backend.env.smtpPort }}"
+  SMTP_USER: {{ .Values.iam.backend.env.smtpUser }}
+  SMTP_WITH_TLS: "{{ .Values.iam.backend.env.smtpEnableTLS }}"
+  TOKEN_ISSUER: {{ .Values.iam.backend.env.tokenIssuer }}
+{{- end }}

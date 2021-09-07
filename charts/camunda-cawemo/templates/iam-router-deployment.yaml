@@ -1,0 +1,107 @@
+{{- if .Values.iam.router.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.iam.router.containerName }}
+  labels:
+    {{- include "camunda-cawemo.labels" . | nindent 4 }}
+    {{- include "camunda-cawemo-iam-router.labels" . | nindent 4 }}
+
+
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.general.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+        {{- include "camunda-cawemo-iam-router.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "camunda-cawemo-iam-router.selectorLabels" . | nindent 8 }}
+
+    spec:
+
+      {{- with .Values.iam.router.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      serviceAccountName: {{ include "camunda-cawemo.serviceAccountName" . }}
+
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.iam.router.image.repository }}:{{ .Values.iam.router.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.iam.router.image.pullPolicy }}
+
+          env:
+            - name: DEBUG
+              value: "{{ .Values.iam.router.debug }}"
+{{/*            {{- if .Values.elasitc.external.enabled }}*/}}
+            - name: BACKEND_CONTAINER
+              value: "{{ .Values.iam.router.env.backEnd }}"
+            - name: FRONTEND_CONTAINER
+              value: "{{ .Values.iam.router.env.frontend }}"
+{{/*            {{- end }}*/}}
+
+          ports:
+            - name: {{ .Values.iam.router.service.portName }}
+              containerPort: {{ .Values.iam.router.service.port }}
+              protocol: TCP
+
+{{/* Rediness probe must be defined correctly otherwise the Service Endpoints will not be assigned. Thus the app will not be accessible externally */}}
+{{/*          readinessProbe: */}}
+{{/*            httpGet: */}}
+{{/*              path: optimze */}}
+{{/*              port: http */}}
+{{/*            initialDelaySeconds: 60 */}}
+{{/*            periodSeconds: 60 */}}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+{{/*          volumeMounts:*/}}
+{{/*          - mountPath: /cawemo/config/environment-config.yaml*/}}
+{{/*            subPath: environment-config.yaml*/}}
+{{/*            name: environment-config*/}}
+
+{{/*          - mountPath: /cawemo/config/OptimizeLicense.txt*/}}
+{{/*            subPath: OptimizeLicense.txt*/}}
+{{/*            name: cawemo-license*/}}
+
+{{/*      volumes:*/}}
+{{/*      - name: environment-config*/}}
+{{/*        configMap:*/}}
+{{/*          name: environment-config*/}}
+
+{{/*      - name: cawemo-license*/}}
+{{/*        secret:*/}}
+{{/*          secretName: cawemo-license*/}}
+
+      initContainers:
+        - name: init-iam-frontend
+          image: busybox
+          command: ['sh', '-c', 'until nslookup cawemo-demo-camunda-cawemo-iam-frontend; do echo waiting for iam-frontend; sleep 2; done;']
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -1,0 +1,19 @@
+{{- if .Values.iam.router.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.iam.router.containerName }}
+  labels:
+    {{- include "camunda-cawemo.labels" . | nindent 4 }}
+    {{- include "camunda-cawemo-iam-router.labels" . | nindent 4 }}
+
+spec:
+  type: {{ .Values.iam.router.service.type }}
+  ports:
+    - port: {{ .Values.iam.router.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "camunda-cawemo-iam-router.selectorLabels" . | nindent 4 }}
+{{- end }}

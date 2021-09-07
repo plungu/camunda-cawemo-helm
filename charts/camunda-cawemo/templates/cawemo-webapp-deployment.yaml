@@ -1,0 +1,142 @@
+{{- if .Values.webapp.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.webapp.containerName }}
+  labels:
+    {{- include "camunda-cawemo.labels" . | nindent 4 }}
+    {{- include "camunda-cawemo-webapp.labels" . | nindent 4 }}
+
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.general.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "camunda-cawemo-webapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "camunda-cawemo-webapp.selectorLabels" . | nindent 8 }}
+
+    spec:
+      {{- with .Values.webapp.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      serviceAccountName: {{ include "camunda-cawemo.serviceAccountName" . }}
+
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.webapp.image.repository }}:{{ .Values.webapp.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.webapp.image.pullPolicy }}
+
+          env:
+            - name: DEBUG
+              value: "{{ .Values.general.debug }}"
+            - name: NODE_ENV
+              value: "{{ .Values.webapp.env.nodeEnv }}"
+            - name: NODE_OPTIONS
+              value: "{{ .Values.webapp.env.nodeOptions }}"
+            - name: PRODUCT_CONTEXT
+              value: "{{ .Values.webapp.env.productContext }}"
+            - name: REST_API_URL
+              value: "{{ .Values.webapp.env.restAPIUrl }}"
+            - name: REST_MANAGEMENT_API_URL
+              value: "{{ .Values.webapp.env.restManagementApiUrl }}"
+            - name: CLIENT_PUSHER_KEY
+              value: "{{ .Values.webapp.env.clientWebsocketKey }}"
+            - name: CLIENT_PUSHER_HOST
+              value: "{{ .Values.webapp.env.clientWebsocketHost }}"
+            - name: CLIENT_PUSHER_PORT
+              value: "{{ .Values.webapp.env.clientWebsocketPort }}"
+            - name: CLIENT_PUSHER_FORCETLS
+              value: "{{ .Values.webapp.env.clientWebsocketForceTLS }}"
+            - name: CLIENT_THEME_COLORS_PRIMARY
+              value: "{{ .Values.webapp.env.cleintThemeColorPrimary }}"
+            - name: CLIENT_THEME_COLORS_SECONDARY
+              value: "{{ .Values.webapp.env.cleintThemeColorSecondary }}"
+            - name: CLIENT_THEME_COLORS_ACCENT
+              value: "{{ .Values.webapp.env.clientThemeColorAccent }}"
+            - name: CLIENT_THEME_LOGOPATH
+              value: "{{ .Values.webapp.env.clientThemeLogoUrl }}"
+            - name: NODE_SESSION_COOKIE_SECRET
+              value: "{{ .Values.webapp.env.serverSessionCookieSecret }}"
+            - name: PUSHER_APP_ID
+              value: "{{ .Values.webapp.env.webSocketAppId }}"
+            - name: PUSHER_KEY
+              value: "{{ .Values.webapp.env.webSocketKey }}"
+            - name: PUSHER_HOST
+              value: "{{ .Values.webapp.env.websocketHost }}"
+            - name: PUSHER_SECRET
+              value: "{{ .Values.webapp.env.webSocketSecret }}"
+            - name: SERVER_HTTPS_ONLY
+              value: "{{ .Values.webapp.env.serverHttpsOnly }}"
+            - name: SERVER_HOST
+              value: "{{ .Values.webapp.env.serverHost }}"
+            - name: SERVER_URL
+              value: "{{ .Values.webapp.env.serverUrl }}"
+            - name: IAM_BASE_URL
+              value: "{{ .Values.webapp.env.iamBaseUrl }}"
+            - name: IAM_CAWEMO_CLIENT_ID
+              value: "{{ .Values.webapp.env.iamCawemoClientId }}"
+            - name: IAM_CAWEMO_CLIENT_SECRET
+              value: "{{ .Values.webapp.env.iamCawemoClientSecret }}"
+
+          ports:
+            - name: {{ .Values.webapp.service.portName }}
+              containerPort: {{ .Values.webapp.service.port }}
+              protocol: TCP
+
+{{/* Rediness probe must be defined correctly otherwise the Service Endpoints will not be assigned. Thus the app will not be accessible externally*/}}
+{{/*          readinessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: optimze*/}}
+{{/*              port: http*/}}
+{{/*            initialDelaySeconds: 60*/}}
+{{/*            periodSeconds: 60*/}}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+{{/*          volumeMounts:*/}}
+{{/*          - mountPath: /cawemo/config/environment-config.yaml*/}}
+{{/*            subPath: environment-config.yaml*/}}
+{{/*            name: environment-config*/}}
+
+{{/*          - mountPath: /cawemo/config/OptimizeLicense.txt*/}}
+{{/*            subPath: OptimizeLicense.txt*/}}
+{{/*            name: cawemo-license*/}}
+
+{{/*      volumes:*/}}
+{{/*      - name: environment-config*/}}
+{{/*        configMap:*/}}
+{{/*          name: environment-config*/}}
+
+{{/*      - name: cawemo-license*/}}
+{{/*        secret:*/}}
+{{/*          secretName: cawemo-license*/}}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end}}

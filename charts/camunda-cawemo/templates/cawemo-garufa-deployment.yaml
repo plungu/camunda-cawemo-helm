@@ -1,0 +1,100 @@
+{{- if .Values.garufa.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.garufa.containerName }}
+  labels:
+    {{- include "camunda-cawemo.labels" . | nindent 4 }}
+    {{- include "camunda-cawemo-garufa.labels" . | nindent 4 }}
+
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.general.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "camunda-cawemo-garufa.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "camunda-cawemo-garufa.selectorLabels" . | nindent 8 }}
+
+    spec:
+      {{- with .Values.garufa.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      serviceAccountName: {{ include "camunda-cawemo.serviceAccountName" . }}
+
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.garufa.image.repository }}:{{ .Values.garufa.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.garufa.image.pullPolicy }}
+
+          env:
+            - name: DEBUG
+              value: "{{ .Values.general.debug }}"
+            - name: APP_ID
+              value: "{{ .Values.garufa.env.appId }}"
+            - name: APP_KEY
+              value: "{{ .Values.garufa.env.appKey }}"
+            - name: SECRET
+              value: "{{ .Values.garufa.env.websocketSecret }}"
+
+          ports:
+            - name: {{ .Values.garufa.service.portName }}
+              containerPort: {{ .Values.garufa.service.port }}
+              protocol: TCP
+
+{{/* Rediness probe must be defined correctly otherwise the Service Endpoints will not be assigned. Thus the app will not be accessible externally */}}
+{{/*          readinessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: optimze*/}}
+{{/*              port: http*/}}
+{{/*            initialDelaySeconds: 60*/}}
+{{/*            periodSeconds: 60*/}}
+
+{{/*          resources:*/}}
+{{/*            {{- toYaml .Values.resources | nindent 12 }}*/}}
+
+{{/*          volumeMounts:*/}}
+{{/*          - mountPath: /cawemo/config/environment-config.yaml*/}}
+{{/*            subPath: environment-config.yaml*/}}
+{{/*            name: environment-config*/}}
+
+{{/*          - mountPath: /cawemo/config/OptimizeLicense.txt*/}}
+{{/*            subPath: OptimizeLicense.txt*/}}
+{{/*            name: cawemo-license*/}}
+
+{{/*      volumes:*/}}
+{{/*      - name: environment-config*/}}
+{{/*        configMap:*/}}
+{{/*          name: environment-config*/}}
+
+{{/*      - name: cawemo-license*/}}
+{{/*        secret:*/}}
+{{/*          secretName: cawemo-license*/}}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end}}

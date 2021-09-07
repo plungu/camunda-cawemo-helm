@@ -1,0 +1,151 @@
+{{- if .Values.iam.backend.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.iam.backend.containerName }}
+  labels:
+    {{- include "camunda-cawemo.labels" . | nindent 4 }}
+    {{- include "camunda-cawemo-iam-backend.labels" . | nindent 4 }}
+
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.general.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "camunda-cawemo-iam-backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "camunda-cawemo-iam-backend.selectorLabels" . | nindent 8 }}
+
+    spec:
+      {{- with .Values.iam.backend.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      serviceAccountName: {{ include "camunda-cawemo.serviceAccountName" . }}
+
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.iam.backend.image.repository }}:{{ .Values.iam.backend.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.iam.backend.image.pullPolicy }}
+
+{{/*          command: [ "/bin/sh", "-c", "env" ]*/}}
+          envFrom:
+            - configMapRef:
+                name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.iam.backend.containerName }}
+
+          env:
+            - name: DEBUG
+              value: "{{ .Values.general.debug }}"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.iam.backend.env.credentialsSecertName }}
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.iam.backend.env.credentialsSecertName }}
+                  key: DB_PASSWORD
+            - name: TOKEN_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.iam.backend.env.tokenSigningKeySecretName }}
+                  key: TOKEN_SIGNING_KEY
+            - name: BACKEND_URL
+              value: {{ .Values.iam.backend.env.backendUrl }}
+            - name: DATABASE_ENCRYPTION_KEY
+              value: {{ .Values.iam.backend.env.dataBaseEncryptionKey }}
+            - name: DB_URL
+              value: {{ .Values.iam.backend.env.dbUrl }}
+            - name: DEFAULT_CLIENT_BASE_URL
+              value: {{ .Values.iam.backend.env.defaultClientBaseUrl }}
+            - name: DEFAULT_CLIENT_ID
+              value: {{ .Values.iam.backend.env.defaultClientId }}
+            - name: DEFAULT_CLIENT_LOGOUT_URL
+              value: {{ .Values.iam.backend.env.defaultClientLogoutUrl }}
+            - name: DEFAULT_CLIENT_NAME
+              value: {{ .Values.iam.backend.env.defaultClientName }}
+            - name: DEFAULT_CLIENT_SECRET
+              value: {{ .Values.iam.backend.env.defaultClientSecret }}
+            - name: EMAIL_NOREPLY_SENDER
+              value: {{ .Values.iam.backend.env.emailNoreplySender }}
+            - name: EMAIL_SENDER
+              value: {{ .Values.iam.backend.env.emailSender }}
+            - name: EMAIL_SENDER_NAME
+              value: {{ .Values.iam.backend.env.emailSenderName }}
+            - name: EMAIL_SUPPORT
+              value: {{ .Values.iam.backend.env.emailSupport }}
+            - name: ENFORCE_HTTPS
+              value: "{{ .Values.iam.backend.env.enforceHttps }}"
+            - name: FRONTEND_URL
+              value: {{ .Values.iam.backend.env.frontEndUrl }}
+            - name: SMTP_HOST
+              value: {{ .Values.iam.backend.env.smtpHost }}
+            - name: SMTP_PASSWORD
+              value: {{ .Values.iam.backend.env.smtpPassword }}
+            - name: SMTP_PORT
+              value: "{{ .Values.iam.backend.env.smtpPort }}"
+            - name: SMTP_USER
+              value: {{ .Values.iam.backend.env.smtpUser }}
+            - name: SMTP_WITH_TLS
+              value: "{{ .Values.iam.backend.env.smtpEnableTLS }}"
+            - name: TOKEN_ISSUER
+              value: {{ .Values.iam.backend.env.tokenIssuer }}
+
+{{/* Rediness probe must be defined correctly otherwise the Service Endpoints will not be assigned. Thus the app will not be accessible externally */}}
+{{/*          readinessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: optimze*/}}
+{{/*              port: http*/}}
+{{/*            initialDelaySeconds: 60*/}}
+{{/*            periodSeconds: 60*/}}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+{{/*          volumeMounts:*/}}
+{{/*          - mountPath: /cawemo/config/environment-config.yaml*/}}
+{{/*            subPath: environment-config.yaml*/}}
+{{/*            name: environment-config*/}}
+
+{{/*          - mountPath: /cawemo/config/OptimizeLicense.txt*/}}
+{{/*            subPath: OptimizeLicense.txt*/}}
+{{/*            name: cawemo-license*/}}
+
+{{/*      volumes:*/}}
+{{/*      - name: environment-config*/}}
+{{/*        configMap:*/}}
+{{/*          name: environment-config*/}}
+
+{{/*      - name: cawemo-license*/}}
+{{/*        secret:*/}}
+{{/*          secretName: cawemo-license*/}}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end}}
