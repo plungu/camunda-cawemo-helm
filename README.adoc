@@ -15,7 +15,7 @@ v1.0, 2020-08-13
 - [x] Cawemo EE Repo Pull
 - [x] Cawemo License
 - [x] Load Balancer with sticky sessions
-- [x] Elastic Search
+- [x] Postgresql Database
 
 
 == How does it work
