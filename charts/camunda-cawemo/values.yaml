@@ -14,6 +14,7 @@ iam:
   # IAM Backend Configs
   backend:
     enabled: enabled
+    debug: true
     # EE image pull in configuration
     containerName: iam-backend
     image:
@@ -23,13 +24,13 @@ iam:
       pullSecrets:
         - name: camunda-reg-cred
     env:
-      backendUrl: "http://cawemo-demo-camunda-cawemo-iam-backend/api"
+      backendUrl: "http://router.127.0.0.1.nip.io"
       dataBaseEncryptionKey: 3258E7D1905E41308BED27A011C05713
       dbUrl: "jdbc:postgresql://iam-database-postgresql.default.svc.cluster.local:5432/workflow"
       credentialsSecertName: workflow-database-credentials
-      defaultClientBaseUrl: "http://cawemo-demo-camunda-cawemo-cawemo-webapp"
+      defaultClientBaseUrl: "http://cawemo.127.0.0.1.nip.io"
       defaultClientId: cawemo
-      defaultClientLogoutUrl: "http://cawemo-demo-camunda-cawemo-cawemo-webapp/logout"
+      defaultClientLogoutUrl: "http://cawemo.127.0.0.1.nip.io/logout"
       defaultClientName: Cawemo
       defaultClientSecret: 91FCCFAF21A44B6C9AC7BA1D1FEC3456
       emailNoreplySender: "cawemo@your-company.com"
@@ -37,7 +38,7 @@ iam:
       emailSenderName: Cawemo
       emailSupport: "cawemo@your-company.com"
       enforceHttps: false
-      frontEndUrl: "http://cawemo-demo-camunda-cawemo-iam-frontend"
+      frontEndUrl: "http://router.127.0.0.1.nip.io"
       smtpHost: cawemo-mailhog
       smtpPort: "1025"
       smtpPassword: cawemo
@@ -53,6 +54,7 @@ iam:
   # IAM Frontend Configs
   frontend:
     enabled: true
+    debug: true
     # EE image pull in configuration
     containerName: iam-frontend
     image:
@@ -62,8 +64,8 @@ iam:
       pullSecrets:
         - name: camunda-reg-cred
     env:
-      backend: "http://cawemo-demo-camunda-cawemo-iam-backend/api"
-      base: "http://cawemo-demo-camunda-cawemo-iam-backend"
+      backend: "http://router.127.0.0.1.nip.io/api"
+      base: "http://router.127.0.0.1.nip.io"
       emailNoreplySender: cawemo@your-company.com
       emailSupport: cawemo@your-company.com
     service:
@@ -84,7 +86,7 @@ iam:
       pullSecrets:
         - name: camunda-reg-cred
     env:
-      backEnd: "cawemo-demo-camunda-cawemo-iam-backend"
+      backEnd: "cawemo-demo-camunda-cawemo-iam-backend:8090"
       frontend: "cawemo-demo-camunda-cawemo-iam-frontend"
     # Kubernetes Service Resource
     service:
@@ -165,6 +167,27 @@ garufa:
     type: ClusterIP
     port: 8060
     portName: http
+  ingress:
+    enabled: true
+    # see more config options https://kubernetes.github.io/ingress-nginx/examples/affinity/cookie/
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    annotations: {
+      nginx.ingress.kubernetes.io/ingress.class: nginx,
+      nginx.ingress.kubernetes.io/affinity: "cookie",
+      nginx.ingress.kubernetes.io/affinity-mode: "persistent",
+      nginx.ingress.kubernetes.io/session-cookie-expires: "172800",
+      nginx.ingress.kubernetes.io/session-cookie-max-age: "172800",
+    }
+    serviceName: cawemo-demo-camunda-cawemo-cawemo-garufa
+    servicePort: 8060
+    hosts:
+      - host: websockets.127.0.0.1.nip.io
+        paths: ["/"]
+    tls: []
+    #  - secretName: camunda-cawemo-tls
+    #    hosts:
+    #      - camunda-cawemo.local
 
 restapi:
   enabled: true
@@ -199,7 +222,7 @@ restapi:
     websocketPort: 80
     serverCacheTemplates: "true"
     serverShutDownTimeout: 9000
-    cawemoServerUrl: "http://cawemo-demo-camunda-cawemo-cawemo-restapi"
+    cawemoServerUrl: "http://cawemo.127.0.0.1.nip.io"
     cleintThemeColorsPrimary: "#2875cc"
     clientThemeColorsSecondary: "#00bfa5"
     clientThemeColorsAccent: "#343434"
@@ -223,10 +246,10 @@ webapp:
     nodeEnv: production
     nodeOptions: "--max-old-space-size=128"
     productContext: enterprise
-    restAPIUrl: "http://cawemo-demo-camunda-cawemo-cawemo-restapi"
+    restAPIUrl: "http://cawemo-demo-camunda-cawemo-cawemo-restapi:8081"
     restManagementApiUrl: "http://cawemo-demo-camunda-cawemo-cawemo-restapi:8091"
     clientWebsocketKey: 1
-    clientWebsocketHost: cawemo-demo-camunda-cawemo-cawemo-garufa
+    clientWebsocketHost: "http://websockets.127.0.0.1.nip.io"
     clientWebsocketPort: 80
     clientWebsocketForceTLS: false
     cleintThemeColorPrimary: "#2875cc"
@@ -236,10 +259,10 @@ webapp:
     serverSessionCookieSecret: 5DE53D45DD5A46C089A6E3FD487D1844
     webSocketAppId: 1
     webSocketKey: 1
-    websocketHost: cawemo-demo-camunda-cawemo-cawemo-garufa
+    websocketHost: "websockets.127.0.0.1.nip.io"
     webSocketSecret: 79B0399807C5436E84056589A1E25F1F
     serverHttpsOnly: false
-    serverHost: cawemo-demo-camunda-cawemo-cawemo-webapp
+    serverHost: "cawemo.127.0.0.1.nip.io"
     serverUrl: "http://cawemo.127.0.0.1.nip.io"
     iamBaseUrl: "http://router.127.0.0.1.nip.io"
     iamCawemoClientId: cawemo
