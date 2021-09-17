@@ -208,7 +208,7 @@ IMPORTANT: several apps configured in the cluster for Cawemo. See the values.yam
 ----
 image:
   repository: registry.camunda.cloud/cawemo-ee/<<cawemo-app>>
-  tag: 1.5.1
+  tag: 1.7.1
   pullPolicy: IfNotPresent
   pullSecrets:
     - name: camunda-reg-cred
