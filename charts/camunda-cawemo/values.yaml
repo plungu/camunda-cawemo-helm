@@ -19,7 +19,7 @@ iam:
     containerName: iam-backend
     image:
       repository: registry.camunda.cloud/iam-ee/iam-backend
-      tag: v1.0.2
+      tag: v1.1.6
       pullPolicy: IfNotPresent
       pullSecrets:
         - name: camunda-reg-cred
@@ -59,7 +59,7 @@ iam:
     containerName: iam-frontend
     image:
       repository: registry.camunda.cloud/iam-ee/iam-frontend
-      tag: v1.0.2
+      tag: v1.1.6
       pullPolicy: IfNotPresent
       pullSecrets:
         - name: camunda-reg-cred
@@ -81,7 +81,7 @@ iam:
     containerName: iam-router
     image:
       repository: registry.camunda.cloud/iam-ee/iam-router
-      tag: v1.0.2
+      tag: v1.1.6
       pullPolicy: IfNotPresent
       pullSecrets:
         - name: camunda-reg-cred
