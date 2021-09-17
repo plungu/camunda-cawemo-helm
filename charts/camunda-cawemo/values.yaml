@@ -130,8 +130,10 @@ smtp:
   env:
   service:
     type: ClusterIP
-    port: 1025
-    portName: http
+    smtpPort: 1025
+    smtpPortName: smtp
+    httpPort: 8025
+    httpPortName: http
 
 adminer:
   enabled: true

@@ -10,10 +10,14 @@ metadata:
 spec:
   type: {{ .Values.smtp.service.type }}
   ports:
-    - port: {{ .Values.adminer.service.port }}
+    - port: {{ .Values.smtp.service.smtpPort }}
+      targetPort: smtp
+      protocol: TCP
+      name: smtp
+    - port: {{ .Values.smtp.service.httpPort }}
       targetPort: http
       protocol: TCP
       name: http
   selector:
-    {{- include "camunda-cawemo-adminer.selectorLabels" . | nindent 4 }}
+    {{- include "camunda-cawemo-smtp.selectorLabels" . | nindent 4 }}
 {{- end }}

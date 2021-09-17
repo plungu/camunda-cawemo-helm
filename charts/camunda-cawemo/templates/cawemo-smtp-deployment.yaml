@@ -44,8 +44,11 @@ spec:
 {{/*          env:*/}}
 
           ports:
-            - name: {{ .Values.smtp.service.portName }}
-              containerPort: {{ .Values.smtp.service.port }}
+            - name: {{ .Values.smtp.service.smtpPortName }}
+              containerPort: {{ .Values.smtp.service.smtpPort }}
+              protocol: TCP
+            - name: {{ .Values.smtp.service.httpPortName }}
+              containerPort: {{ .Values.smtp.service.httpPort }}
               protocol: TCP
 
 {{/* Rediness probe must be defined correctly otherwise the Service Endpoints will not be assigned. Thus the app will not be accessible externally */}}
