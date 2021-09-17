@@ -268,6 +268,7 @@ webapp:
     serverHost: "cawemo.127.0.0.1.nip.io"
     serverUrl: "http://cawemo.127.0.0.1.nip.io"
     iamBaseUrl: "http://router.127.0.0.1.nip.io"
+    iamBackchannelUrl: "http://cawemo-demo-camunda-cawemo-iam-router/api"
     iamCawemoClientId: cawemo
     iamCawemoClientSecret: 91FCCFAF21A44B6C9AC7BA1D1FEC3456
   service:

@@ -88,6 +88,8 @@ spec:
               value: "{{ .Values.webapp.env.serverUrl }}"
             - name: IAM_BASE_URL
               value: "{{ .Values.webapp.env.iamBaseUrl }}"
+            - name: IAM_BACKCHANNEL_URL
+              value: "{{ .Values.webapp.env.iamBackchannelUrl }}"
             - name: IAM_CAWEMO_CLIENT_ID
               value: "{{ .Values.webapp.env.iamCawemoClientId }}"
             - name: IAM_CAWEMO_CLIENT_SECRET
