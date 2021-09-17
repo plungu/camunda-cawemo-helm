@@ -24,7 +24,7 @@ iam:
       pullSecrets:
         - name: camunda-reg-cred
     env:
-      backendUrl: "http://router.127.0.0.1.nip.io"
+      backendUrl: "http://router.127.0.0.1.nip.io/api"
       dataBaseEncryptionKey: 3258E7D1905E41308BED27A011C05713
       dbUrl: "jdbc:postgresql://iam-database-postgresql.default.svc.cluster.local:5432/workflow"
       credentialsSecertName: workflow-database-credentials
@@ -44,11 +44,11 @@ iam:
       smtpPassword: cawemo
       smtpUser: cawemo
       smtpEnableTLS: "false"
-      tokenIssuer: iam-router
+      tokenIssuer: "http://router.127.0.0.1.nip.io"
       tokenSigningKeySecretName: cawemo-demo-camunda-cawemo-iam-backend-token
     service:
       type: ClusterIP
-      port: 8090
+      port: 8080
       portName: http
 
   # IAM Frontend Configs
@@ -64,7 +64,7 @@ iam:
       pullSecrets:
         - name: camunda-reg-cred
     env:
-      backend: "http://router.127.0.0.1.nip.io/api"
+      backend: "/api"
       base: "http://router.127.0.0.1.nip.io"
       emailNoreplySender: cawemo@your-company.com
       emailSupport: cawemo@your-company.com
@@ -86,7 +86,7 @@ iam:
       pullSecrets:
         - name: camunda-reg-cred
     env:
-      backEnd: "cawemo-demo-camunda-cawemo-iam-backend:8090"
+      backEnd: "cawemo-demo-camunda-cawemo-iam-backend:8080"
       frontend: "cawemo-demo-camunda-cawemo-iam-frontend"
     # Kubernetes Service Resource
     service:

@@ -105,6 +105,11 @@ spec:
             - name: TOKEN_ISSUER
               value: {{ .Values.iam.backend.env.tokenIssuer }}
 
+          ports:
+            - name: {{ .Values.iam.backend.service.portName }}
+              containerPort: {{ .Values.iam.backend.service.port }}
+              protocol: TCP
+
 {{/* Rediness probe must be defined correctly otherwise the Service Endpoints will not be assigned. Thus the app will not be accessible externally */}}
 {{/*          readinessProbe:*/}}
 {{/*            httpGet:*/}}
