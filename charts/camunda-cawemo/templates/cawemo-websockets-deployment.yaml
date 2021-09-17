@@ -1,11 +1,11 @@
-{{- if .Values.garufa.enabled -}}
+{{- if .Values.websockets.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.garufa.containerName }}
+  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.websockets.containerName }}
   labels:
     {{- include "camunda-cawemo.labels" . | nindent 4 }}
-    {{- include "camunda-cawemo-garufa.labels" . | nindent 4 }}
+    {{- include "camunda-cawemo-websockets.labels" . | nindent 4 }}
 
 spec:
   {{- if not .Values.autoscaling.enabled }}
@@ -13,7 +13,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "camunda-cawemo-garufa.selectorLabels" . | nindent 6 }}
+      {{- include "camunda-cawemo-websockets.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -21,10 +21,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "camunda-cawemo-garufa.selectorLabels" . | nindent 8 }}
+        {{- include "camunda-cawemo-websockets.selectorLabels" . | nindent 8 }}
 
     spec:
-      {{- with .Values.garufa.image.pullSecrets }}
+      {{- with .Values.websockets.image.pullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -38,22 +38,27 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.garufa.image.repository }}:{{ .Values.garufa.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.garufa.image.pullPolicy }}
+          image: "{{ .Values.websockets.image.repository }}:{{ .Values.websockets.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.websockets.image.pullPolicy }}
 
           env:
             - name: DEBUG
               value: "{{ .Values.general.debug }}"
-            - name: APP_ID
-              value: "{{ .Values.garufa.env.appId }}"
-            - name: APP_KEY
-              value: "{{ .Values.garufa.env.appKey }}"
-            - name: SECRET
-              value: "{{ .Values.garufa.env.websocketSecret }}"
-
+            - name: APP_NAME
+              value: "{{ .Values.websockets.env.appName }}"
+            - name: APP_DEBUG
+              value: "{{ .Values.websockets.env.appDebug }}"
+            - name: PUSHER_APP_ID
+              value: "{{ .Values.websockets.env.pusherAppId }}"
+            - name: PUSHER_APP_KEY
+              value: "{{ .Values.websockets.env.pusherAppKey }}"
+            - name: PUSHER_APP_SECRET
+              value: "{{ .Values.websockets.env.pusherAppSecret }}"
+            - name: PUSHER_APP_CLUSTER
+              value: "{{ .Values.websockets.env.pusherAppCluster }}"
           ports:
-            - name: {{ .Values.garufa.service.portName }}
-              containerPort: {{ .Values.garufa.service.port }}
+            - name: {{ .Values.websockets.service.portName }}
+              containerPort: {{ .Values.websockets.service.port }}
               protocol: TCP
 
 {{/* Rediness probe must be defined correctly otherwise the Service Endpoints will not be assigned. Thus the app will not be accessible externally */}}

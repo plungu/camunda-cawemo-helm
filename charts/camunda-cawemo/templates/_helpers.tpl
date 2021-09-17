@@ -57,8 +57,8 @@ Deployment Specific labels
 {{ include "camunda-cawemo-iam-router.selectorLabels" . }}
 {{- end }}
 
-{{- define "camunda-cawemo-garufa.labels" -}}
-{{ include "camunda-cawemo-garufa.selectorLabels" . }}
+{{- define "camunda-cawemo-websockets.labels" -}}
+{{ include "camunda-cawemo-websockets.selectorLabels" . }}
 {{- end }}
 
 {{- define "camunda-cawemo-restapi.labels" -}}
@@ -121,21 +121,21 @@ app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.iam.rou
 {{- end }}
 
 {{/*
-Garufa Selector labels
+Websockets Selector labels
 */}}
-{{- define "camunda-cawemo-garufa.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.garufa.containerName }}
+{{- define "camunda-cawemo-websockets.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.websockets.containerName }}
 {{- end }}
 
 {{/*
-Garufa Selector labels
+Websockets Selector labels
 */}}
 {{- define "camunda-cawemo-restapi.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.restapi.containerName }}
 {{- end }}
 
 {{/*
-Garufa Selector labels
+Websockets Selector labels
 */}}
 {{- define "camunda-cawemo-webapp.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.webapp.containerName }}

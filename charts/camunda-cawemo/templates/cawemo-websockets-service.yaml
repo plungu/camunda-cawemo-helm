@@ -1,0 +1,19 @@
+{{- if .Values.websockets.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.websockets.containerName }}
+  labels:
+    {{- include "camunda-cawemo.labels" . | nindent 4 }}
+    {{- include "camunda-cawemo-websockets.labels" . | nindent 4 }}
+
+spec:
+  type: {{ .Values.websockets.service.type }}
+  ports:
+    - port: {{ .Values.websockets.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "camunda-cawemo-websockets.selectorLabels" . | nindent 4 }}
+{{- end }}

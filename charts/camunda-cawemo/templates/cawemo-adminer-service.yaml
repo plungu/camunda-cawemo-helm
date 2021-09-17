@@ -8,7 +8,7 @@ metadata:
     {{- include "camunda-cawemo-adminer.labels" . | nindent 4 }}
 
 spec:
-  type: {{ .Values.garufa.service.type }}
+  type: {{ .Values.websockets.service.type }}
   ports:
     - port: {{ .Values.adminer.service.port }}
       targetPort: http

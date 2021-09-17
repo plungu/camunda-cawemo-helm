@@ -149,20 +149,23 @@ adminer:
     port: 8080
     portName: http
 
-garufa:
+websockets:
   enabled: true
   debug: false
-  containerName: cawemo-garufa
+  containerName: cawemo-websockets
   image:
-    repository: registry.camunda.cloud/cawemo-ee/cawemo-garufa
+    repository: registry.camunda.cloud/cawemo-ee/cawemo-websockets
     tag: 1.7.1
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: camunda-reg-cred
   env:
-    appId: "1"
-    appKey: "1"
-    websocketSecret: "79B0399807C5436E84056589A1E25F1F"
+    appName: "Cawemo WebSockets"
+    appDebug: "false"
+    pusherAppId: "1"
+    pusherAppKey: "1"
+    pusherAppSecret: "79B0399807C5436E84056589A1E25F1F"
+    pusherAppCluster: "cawemo"
   service:
     type: ClusterIP
     port: 8060
@@ -179,7 +182,7 @@ garufa:
       nginx.ingress.kubernetes.io/session-cookie-expires: "172800",
       nginx.ingress.kubernetes.io/session-cookie-max-age: "172800",
     }
-    serviceName: cawemo-demo-camunda-cawemo-cawemo-garufa
+    serviceName: cawemo-demo-camunda-cawemo-cawemo-websockets
     servicePort: 8060
     hosts:
       - host: websockets.127.0.0.1.nip.io
@@ -218,7 +221,7 @@ restapi:
     websocketAppId: 1
     websocketKey: 1
     websocketSecret: 79B0399807C5436E84056589A1E25F1F
-    websocketHost: cawemo-demo-camunda-cawemo-cawemo-garufa
+    websocketHost: cawemo-demo-camunda-cawemo-cawemo-websockets
     websocketPort: 80
     serverCacheTemplates: "true"
     serverShutDownTimeout: 9000

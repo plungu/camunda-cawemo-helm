@@ -1,6 +1,6 @@
 {{- if .Values.webapp.ingress.enabled -}}
-{{- $fullName := .Values.garufa.ingress.serviceName -}}
-{{- $svcPort := .Values.garufa.ingress.servicePort -}}
+{{- $fullName := .Values.websockets.ingress.serviceName -}}
+{{- $svcPort := .Values.websockets.ingress.servicePort -}}
 {{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: networking.k8s.io/v1beta1
 {{- else -}}
@@ -27,7 +27,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.garufa.ingress.hosts }}
+    {{- range .Values.websockets.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:
