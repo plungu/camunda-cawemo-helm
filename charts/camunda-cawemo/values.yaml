@@ -224,7 +224,7 @@ restapi:
     websocketKey: 1
     websocketSecret: 79B0399807C5436E84056589A1E25F1F
     websocketHost: cawemo-demo-camunda-cawemo-cawemo-websockets
-    websocketPort: 80
+    websocketPort: 8060
     serverCacheTemplates: "true"
     serverShutDownTimeout: 9000
     cawemoServerUrl: "http://cawemo.127.0.0.1.nip.io"
@@ -254,7 +254,7 @@ webapp:
     restAPIUrl: "http://cawemo-demo-camunda-cawemo-cawemo-restapi:8081"
     restManagementApiUrl: "http://cawemo-demo-camunda-cawemo-cawemo-restapi:8091"
     clientWebsocketKey: 1
-    clientWebsocketHost: "http://websockets.127.0.0.1.nip.io"
+    clientWebsocketHost: "websockets.127.0.0.1.nip.io"
     clientWebsocketPort: 80
     clientWebsocketForceTLS: false
     cleintThemeColorPrimary: "#2875cc"
