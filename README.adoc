@@ -4,6 +4,7 @@ v1.0, 2020-08-13
 :toc:
 
 == Goals
+
 - Simple and understandable HELM Cawemo example
 - Help understand common configuration and architectural concepts
 - Good documentation and example to assist in getting Cawemo running quickly in Kubernetes
@@ -28,6 +29,67 @@ IMPORTANT: The configs in this chart are preconfigured defaults and serve as a q
 - While this chart defines how Cawemo is installed other components need to be installed in your Kubernetes cluster to make Cawemo work. See <<steps-to-run, Setting up Infra>> to install the other components.
 - You can find more on HELM here https://helm.sh/docs/intro/quickstart/[Helm Quickstart]
 
+=== [[cawemo-connections]] Cawemo Architecture
+
+This section is intended to explain and provide insight into the the way Cawemo works and what it needs to operate
+
+See https://docs.camunda.org/cawemo/latest/technical-guide/architecture-overview/[Cawemo Architecture Overview]
+
+===== IAM Backend
+====
+- User management via REST API
+- JAVA App
+====
+
+===== IAM Frontend
+====
+- UI for Camunda Accounts
+- NodeJS App
+====
+
+===== IAM Router
+====
+- NGINX reverse proxy
+
+- Delegates requests to IAM Frontend AND IAM Backend
+====
+
+===== SMTP Mail Server
+====
+- Mail Server setup for testing is MailHog
+- It can be accessed at http://localhost:8025/
+- Use KubeCtL port forward to access SMTP
+
+====
+
+===== Adminer
+====
+https://www.adminer.org/[Database Management]
+====
+
+===== Cawemo WebSockets
+====
+- PHP Application
+- Websocket Server
+- Pub/Sub Server
+- Accepts HTTP Published Messags from Cawemo REST API/Java Publisher
+- Accepts HTTP Subscriptions from Cawemo Webapp
+====
+
+===== Cawemo REST API
+====
+- Java APP
+- Provides functionality via REST API
+====
+
+===== Cawemo WebApp
+====
+- Reverse proxy for requests
+- NodeJs application
+- Cawemo UI
+- Calls Cawemo REST API via HTTP
+====
+
 == [[steps-to-run]]Steps to run this HELM chart
 
 ==== *STOP* before you run it
@@ -48,7 +110,7 @@ IMPORTANT: The configs in this chart are preconfigured defaults and serve as a q
 ====
 
 
-== [[setup-infra]] Setup Infra and Architecture for Cawemo
+== [[setup-infra]] Setup Infrastructure for Cawemo
 
 ==== [[install-helm]] *Step 0:* Install HELM and Kubernetes
 ====
@@ -83,7 +145,9 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 
 ===== Configure the Ingress resource for Nginx with sticky sessions
 ====
-Update the values.yaml and configure the Ingress Resource to tell the LoadBalancer (the NGINX deployment that was installed above) to stick to one Cawemo instance once the user is logged into the webapps.
+Update the values.yaml and configure the Ingress Resource to tell the LoadBalancer (the NGINX deployment that was installed above) to stick to one instance once the user is logged into the webapps.
+
+IMPORTANT: An ingress resource is defined for the IAM Router, Websockets Sever, and the Webapp. Please see the values.yaml to see the defaults for each service.
 
 *Defaults Below*
 [source,yaml]
@@ -111,23 +175,23 @@ Update the values.yaml and configure the Ingress Resource to tell the LoadBalanc
 ----
 ====
 
----
+//---
 
-===== Increase the replica count of the Nodes
-====
-
-Update the values.yaml and increase the replica count so the load balancer will send requests to both nodes for a user that is not already logged in to web apps.
-
-*Defaults Below*
-[source,yaml]
-----
-general:
-  debug: true
-  replicaCount: 1
-  nameOverride: ""
-  fullnameOverride: ""
-----
-====
+//===== Increase the replica count of the Nodes
+//====
+//
+//Update the values.yaml and increase the replica count so the load balancer will send requests to both nodes for a user that is not already logged in to web apps.
+//
+//*Defaults Below*
+//[source,yaml]
+//----
+//general:
+//  debug: true
+//  replicaCount: 1
+//  nameOverride: ""
+//  fullnameOverride: ""
+//----
+//====
 
 ---
 
@@ -149,29 +213,9 @@ general:
 ---
 
 [[configure-external-database]]
-=== *Step 2:* Configure an External Database
+=== *Step 2:* Configure Databases
 
-==== *Install IAM PostgreSQL Database in the cluster*
-====
-----
-helm install iam-database --set postgresqlPostgresPassword=workflow, postgresqlUsername=workflow,postgresqlPassword=workflow,postgresqlDatabase=workflow bitnami/postgresql
-----
-====
-==== *Install Cawemo PostgreSQL Database in the cluster*
-IMPORTANT: The database must have a super user configured to install Cawemo. See the https://github.com/bitnami/charts/tree/master/bitnami/postgresql[config options here]
-
-NOTE: the config below will install postgres with the `postgres` superuser and password of `workflow`.
-
-TIP: if your database config is incorrect and you reinstall make sure to delete the PVC first. `kubectl get pvc -l "app=postgresql"`
-
-====
-----
-helm install cawemo-database --set postgresqlPostgresPassword=workflow,postgresqlDatabase=workflow bitnami/postgresql
-----
-====
-Based on: https://artifacthub.io/packages/helm/bitnami/postgresql
-
----
+Two databases will be configured for Cawemo and IAM Apps. It's possible to only use one database.
 
 ===== *Create Kubernetes Secret Resource for Postgresql*
 ====
@@ -184,6 +228,31 @@ kubectl create secret generic \
 ====
 
 ---
+
+==== *Install IAM PostgreSQL Database in the cluster*
+====
+----
+helm install iam-database --set postgresqlPostgresPassword=workflow, postgresqlUsername=workflow,postgresqlPassword=workflow,postgresqlDatabase=workflow bitnami/postgresql
+----
+====
+
+---
+
+==== *Install Cawemo PostgreSQL Database in the cluster*
+IMPORTANT: The database must have a super user configured to install Cawemo. See the https://github.com/bitnami/charts/tree/master/bitnami/postgresql[config options here]
+
+NOTE: the config below will install postgres with the `postgres` superuser and password of `workflow`.
+
+TIP: if your database config is incorrect and you reinstall make sure to delete the PVC first. `kubectl get pvc -l "app=postgresql"`
+
+IMPORTANT: The database connection values are hardcoded into the cawemo-restapi-deployment.yaml
+
+====
+----
+helm install cawemo-database --set postgresqlPostgresPassword=workflow,postgresqlDatabase=workflow bitnami/postgresql
+----
+====
+Based on: https://artifacthub.io/packages/helm/bitnami/postgresql
 
 
 == [[cawemo-setup]]Setup Cawemo
@@ -203,7 +272,6 @@ The version of Cawemo can be changed in this section of the values.yaml.
 
 IMPORTANT: several apps configured in the cluster for Cawemo. See the values.yaml for the configuration of all the apps.
 
-*Defaults Below*
 [source,yaml]
 ----
 image:
@@ -247,26 +315,23 @@ kubectl get secret camunda-reg-cred --output="jsonpath={.data.\.dockerconfigjson
 
 ---
 
-=== *Step 5:* [[cawemo-connections]] Configure Cawemo Connections
 
-*This section is intended to explain and provide insight into the connections Cawemo needs to make to other apps to operate*
-
-
-===== Cawemo Specific Configs
-
-*This section is intended to explain and provide insight into the Cawemo configs that allow you to modify Cawemo*
+//===== Cawemo Specific Configs
+//
+//This section is intended to explain and provide insight into the Cawemo configs that allow you to modify Cawemo
 
 
-===== ConfigMap for Cawemo Configurations
 
-*The environment-config ConfigMap defined in data-environment.yaml applies the configs to Cawemo*
+//===== ConfigMap for Cawemo Configurations
+//
+//The environment-config ConfigMap defined in data-environment.yaml applies the configs to Cawemo
 
 
 === *Step 6:* [[cawemo-license]]Configure the Cawemo License
 ====
 IMPORTANT: https://camunda.com/download/enterprise/[Get an enterprise trial to try Cawemo]
 
-*Add your license to the data-license.yaml*
+Add your license to the data-license.yaml. This is a kubernetes `Secret` resource. It will be mounted by the volumes config onto the filesystem of the pod where Cawemo REST API app can read it.
 
 *Defaults Below*
 [source,yaml]
@@ -290,8 +355,8 @@ This is informational. Nothing to do unless you want to change the mount locatio
 [source,yaml]
 ----
           volumeMounts:
-          - mountPath: /cawemo/config/CawemoLicense.txt
-            subPath: CawemoLicense.txt
+          - mountPath: /config.key
+            subPath: config.key
             name: cawemo-license
 
       volumes:
@@ -347,24 +412,20 @@ helm uninstall cawemo-demo
 
 
 == Whats Next
-- [x] Configure Ingress and Scaling
-- [x] Configuration for EE License (*In Progress*)
-- [x] Configure common Cawemo configs (Elastic, Engine)
-- [ ] Configuration for Secrets Vault (HashiCorp, Spring Cloud Vault)
-- [ ] Configuration for LDAP plugin
-- [ ] Adding an Engine plugin
-- [ ] Configuration for Logging
-** [ ] Configuration for Log Drain
-** [ ] Configuration for ARGO
+* [ ] Configure Cloud Deployments (GKE, AWS, Azure)
 ** [ ] Configuration for TERRAFORM
-- [ ] Configurations for SSO
+* [ ] Configure auto-scaling
+* [ ] Configure common Cawemo configs (Elastic, Engine)
+* [ ] Configuration for Secrets Vault (HashiCorp, Spring Cloud Vault)
+* [ ] Configuration for LDAP
+* [ ] Configuration for Logging
+** [ ] Configuration for Log Drain
+* [ ] Configurations for SSO
 ** [ ] with Keycloak
-- [ ] Configure auto-scaling
-- [ ] Configure Cloud Deployments (GKE, AWS, Azure)
 
 
 
-== Based on Camunda Helm
+== Based on Camunda HELM
 image:https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/camunda[link=https://artifacthub.io/packages/search?repo=camunda]
 
 *More Info*

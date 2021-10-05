@@ -4,8 +4,6 @@
 
 # General Configurations for Kubernetes
 general:
-  debug: false
-  replicaCount: 1
   nameOverride: ""
   fullnameOverride: ""
 
@@ -342,7 +340,7 @@ autoscaling:
   minReplicas: 2
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
