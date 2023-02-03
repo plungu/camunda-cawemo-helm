@@ -39,9 +39,8 @@ IMPORTANT: The configs in this chart are preconfigured defaults and serve as a q
 ====
 
 
-== [[setup-infra]] Infra and Architecture for Cawemo
 
-==== [[install-helm]] *Step 0:* Install HELM and Kubernetes
+== [[install-helm]] Install HELM, Kubernetes and Make
 ====
 - You can find more on HELM here https://helm.sh/docs/intro/quickstart/[Helm Quickstart]
 - https://kubernetes.io/docs/setup/[Kubernetes Getting Started]
@@ -57,8 +56,10 @@ IMPORTANT: The configs in this chart are preconfigured defaults and serve as a q
 
 ====
 
+== [[setup-infra]] Infra and Architecture for Cawemo
+
 ---
-==== [[install-ingress-controller]] *Step 1:* Install Ingress Controller with Sticky Sessions
+==== [[install-ingress-controller]] Ingress Controller with Sticky Sessions
 ====
 IMPORTANT: Kubernetes does not come with an implementation of a LoadBalancer or a Reverse Proxy for Ingress. The Ingerss resource allows you to configure a Controller for your needs. It's important to understand what you need from an inrgess resource then you can choose the appropriate Controller to install. There are a variety of vendors.
 
@@ -140,7 +141,7 @@ general:
 ---
 
 [[configure-external-database]]
-=== *Step 2:* Configure an External Database
+=== Configure an External Database
 
 ==== *Install IAM PostgreSQL Database in the cluster*
 ====
@@ -177,7 +178,7 @@ kubectl create secret generic \
 ---
 
 
-== [[setup]]Setup Cawemo
+== [[setup]] Configure Cawemo
 
 ==== [[version]] *Step 4:* Configure the version of Cawemo
 IMPORTANT: https://camunda.com/download/enterprise/[Get an enterprise trial to try Cawemo]
@@ -238,7 +239,7 @@ kubectl get secret camunda-reg-cred --output="jsonpath={.data.\.dockerconfigjson
 
 ---
 
-=== *Step 5:* [[connections]] Configure Cawemo Connections
+=== [[connections]] Configure Cawemo Connections
 
 *This section is intended to explain and provide insight into the connections Cawemo needs to make to other apps to operate*
 
@@ -247,7 +248,7 @@ kubectl get secret camunda-reg-cred --output="jsonpath={.data.\.dockerconfigjson
 *The environment-config ConfigMap defined in data-environment.yaml applies the configs to Cawemo*
 
 
-=== *Step 6:* [[license]]Configure the Cawemo License
+=== [[license]]Configure the Cawemo License
 ====
 IMPORTANT: https://camunda.com/download/enterprise/[Get an enterprise trial to try Cawemo]
 
