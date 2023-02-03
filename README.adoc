@@ -180,7 +180,7 @@ kubectl create secret generic \
 
 == [[setup]] Configure Cawemo
 
-==== [[version]] *Step 4:* Configure the version of Cawemo
+==== [[version]] Configure the version of Cawemo
 IMPORTANT: https://camunda.com/download/enterprise/[Get an enterprise trial to try Cawemo]
 ====
 In this case the latest image is used. But we could swap different images and versions.
@@ -296,16 +296,22 @@ See https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kube
 
 TIP: For more configuration options see https://github.com/camunda/docker-cawemo/blob/next/README.md
 
-=== [[run]] *Step 7:* Run the Chart
+=== [[run]] Run the Chart
 ====
-**Runing the Chart** the following command to install the chart and apply the configurations to the Kubernetes cluster
+**Runing the Chart** the following commands to install the chart and apply the configurations to the Kubernetes cluster
 ----
-helm install demo ./charts/cawemo/
+(This will install the cluster and the supporting components)
+> make
+(This will install Cawemo)
+> make install
 ----
 
 **Remove the Chart **  -- To remove the installation
 ----
-helm uninstall demo
+Clean the entire cluster
+> make clean
+Clean just Cawemo install
+> make clean install
 ----
 ====
 
