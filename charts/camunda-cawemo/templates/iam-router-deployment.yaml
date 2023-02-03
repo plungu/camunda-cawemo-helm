@@ -2,10 +2,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.iam.router.containerName }}
+  name: {{ include "cawemo.fullname" . }}-{{ .Values.iam.router.containerName }}
   labels:
-    {{- include "camunda-cawemo.labels" . | nindent 4 }}
-    {{- include "camunda-cawemo-iam-router.labels" . | nindent 4 }}
+    {{- include "cawemo.labels" . | nindent 4 }}
+    {{- include "iam-router.labels" . | nindent 4 }}
 
 
 spec:
@@ -14,7 +14,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-        {{- include "camunda-cawemo-iam-router.selectorLabels" . | nindent 6 }}
+        {{- include "iam-router.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -22,7 +22,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "camunda-cawemo-iam-router.selectorLabels" . | nindent 8 }}
+        {{- include "iam-router.selectorLabels" . | nindent 8 }}
 
     spec:
 
@@ -31,7 +31,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 
-      serviceAccountName: {{ include "camunda-cawemo.serviceAccountName" . }}
+      serviceAccountName: {{ include "cawemo.serviceAccountName" . }}
 
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -76,21 +76,21 @@ spec:
 
 {{/*          - mountPath: /cawemo/config/OptimizeLicense.txt*/}}
 {{/*            subPath: OptimizeLicense.txt*/}}
-{{/*            name: cawemo-license*/}}
+{{/*            name: license*/}}
 
 {{/*      volumes:*/}}
 {{/*      - name: environment-config*/}}
 {{/*        configMap:*/}}
 {{/*          name: environment-config*/}}
 
-{{/*      - name: cawemo-license*/}}
+{{/*      - name: license*/}}
 {{/*        secret:*/}}
-{{/*          secretName: cawemo-license*/}}
+{{/*          secretName: license*/}}
 
-      initContainers:
-        - name: init-iam-frontend
-          image: busybox
-          command: ['sh', '-c', 'until nslookup cawemo-demo-camunda-cawemo-iam-frontend; do echo waiting for iam-frontend; sleep 2; done;']
+      # initContainers:
+      #   - name: init-iam-frontend
+      #     image: busybox
+      #     command: ['sh', '-c', 'until nslookup {{ include "cawemo.fullname" . }}-{{ .Values.iam.frontend.containerName }} do echo waiting for iam-frontend; sleep 2; done;']
 
       {{- with .Values.nodeSelector }}
       nodeSelector:

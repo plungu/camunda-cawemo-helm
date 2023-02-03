@@ -1,5 +1,5 @@
 apiVersion: v2
-name: camunda-cawemo
+name: cawemo
 description: |
   Helm Chart for Camunda Cawemo.
 type: application
@@ -8,8 +8,8 @@ appVersion: latest
 keywords:
   - bpm
   - bpmn
-  - camunda-cawemo
-  - camunda-cawemo
+  - cawemo
+  - cawemo
   - camunda-engine
   - dmn
   - process-engine
@@ -20,8 +20,8 @@ keywords:
 icon: https://docs.camunda.org/get-started/img/Camunda-Circle.svg
 home: https://camunda.com
 sources:
-  - https://github.com/camunda/camunda-cawemo-helm
-  - https://github.com/camunda/docker-camunda-cawemo
-  - https://github.com/camunda/camunda-cawemo
+  - https://github.com/camunda/helm
+  - https://github.com/camunda/docker-cawemo
+  - https://github.com/camunda/cawemo
 maintainers:
   - name: Paul Lungu

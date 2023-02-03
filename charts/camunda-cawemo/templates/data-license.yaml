@@ -2,10 +2,9 @@ apiVersion: v1
 kind: Secret
 metadata:
   labels:
-    {{- include "camunda-cawemo.labels" . | nindent 4 }}
-  name: cawemo-license
+    {{- include "cawemo.labels" . | nindent 4 }}
+  name: license
 stringData:
   config.key:
     --------------- BEGIN CAMUNDA LICENSE KEY ---------------
-
     --------------- END CAMUNDA LICENSE KEY ---------------

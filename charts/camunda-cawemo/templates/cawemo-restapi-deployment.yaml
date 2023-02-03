@@ -2,10 +2,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.restapi.containerName }}
+  name: {{ include "cawemo.fullname" . }}-{{ .Values.restapi.containerName }}
   labels:
-    {{- include "camunda-cawemo.labels" . | nindent 4 }}
-    {{- include "camunda-cawemo-restapi.labels" . | nindent 4 }}
+    {{- include "cawemo.labels" . | nindent 4 }}
+    {{- include "restapi.labels" . | nindent 4 }}
 
 spec:
   {{- if not .Values.autoscaling.enabled }}
@@ -13,7 +13,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "camunda-cawemo-restapi.selectorLabels" . | nindent 6 }}
+      {{- include "restapi.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -21,7 +21,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "camunda-cawemo-restapi.selectorLabels" . | nindent 8 }}
+        {{- include "restapi.selectorLabels" . | nindent 8 }}
 
     spec:
 
@@ -30,7 +30,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 
-      serviceAccountName: {{ include "camunda-cawemo.serviceAccountName" . }}
+      serviceAccountName: {{ include "cawemo.serviceAccountName" . }}
 
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -133,16 +133,16 @@ spec:
 
           - mountPath: /config.key
             subPath: config.key
-            name: cawemo-license
+            name: license
 
       volumes:
 {{/*      - name: environment-config*/}}
 {{/*        configMap:*/}}
 {{/*          name: environment-config*/}}
 
-      - name: cawemo-license
+      - name: license
         secret:
-          secretName: cawemo-license
+          secretName: license
 
       {{- with .Values.nodeSelector }}
       nodeSelector:

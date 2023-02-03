@@ -2,10 +2,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.iam.backend.containerName }}
+  name: {{ include "cawemo.fullname" . }}-{{ .Values.iam.backend.containerName }}
   labels:
-    {{- include "camunda-cawemo.labels" . | nindent 4 }}
-    {{- include "camunda-cawemo-iam-backend.labels" . | nindent 4 }}
+    {{- include "cawemo.labels" . | nindent 4 }}
+    {{- include "iam-backend.labels" . | nindent 4 }}
 
 spec:
   {{- if not .Values.autoscaling.enabled }}
@@ -13,7 +13,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "camunda-cawemo-iam-backend.selectorLabels" . | nindent 6 }}
+      {{- include "iam-backend.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -21,7 +21,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "camunda-cawemo-iam-backend.selectorLabels" . | nindent 8 }}
+        {{- include "iam-backend.selectorLabels" . | nindent 8 }}
 
     spec:
       {{- with .Values.iam.backend.image.pullSecrets }}
@@ -29,7 +29,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 
-      serviceAccountName: {{ include "camunda-cawemo.serviceAccountName" . }}
+      serviceAccountName: {{ include "cawemo.serviceAccountName" . }}
 
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -44,7 +44,7 @@ spec:
 {{/*          command: [ "/bin/sh", "-c", "env" ]*/}}
           envFrom:
             - configMapRef:
-                name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.iam.backend.containerName }}
+                name: {{ include "cawemo.fullname" . }}-{{ .Values.iam.backend.containerName }}
 
           env:
             - name: DEBUG
@@ -128,16 +128,16 @@ spec:
 
 {{/*          - mountPath: /cawemo/config/OptimizeLicense.txt*/}}
 {{/*            subPath: OptimizeLicense.txt*/}}
-{{/*            name: cawemo-license*/}}
+{{/*            name: license*/}}
 
 {{/*      volumes:*/}}
 {{/*      - name: environment-config*/}}
 {{/*        configMap:*/}}
 {{/*          name: environment-config*/}}
 
-{{/*      - name: cawemo-license*/}}
+{{/*      - name: license*/}}
 {{/*        secret:*/}}
-{{/*          secretName: cawemo-license*/}}
+{{/*          secretName: license*/}}
 
       {{- with .Values.nodeSelector }}
       nodeSelector:

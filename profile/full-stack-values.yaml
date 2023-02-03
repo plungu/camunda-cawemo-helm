@@ -1,0 +1,350 @@
+# Default values for cawemo.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# General Configurations for Kubernetes
+general:
+  debug: false
+  replicaCount: 1
+  nameOverride: ""
+  fullnameOverride: ""
+
+# IAM Configs
+iam:
+  # IAM Backend Configs
+  backend:
+    enabled: enabled
+    debug: true
+    # EE image pull in configuration
+    containerName: iam-backend
+    image:
+      repository: registry.camunda.cloud/iam-ee/iam-backend
+      tag: latest
+      pullPolicy: IfNotPresent
+      pullSecrets:
+        - name: registry-credentials
+    env:
+      backendUrl: "http://router.127.0.0.1.nip.io/api"
+      dataBaseEncryptionKey: 3258E7D1905E41308BED27A011C05713
+      dbUrl: "jdbc:postgresql://iam-postgresql.postgres.svc.cluster.local:5432/workflow"
+      credentialsSecertName: database-credentials
+      defaultClientBaseUrl: "http://cawemo.127.0.0.1.nip.io"
+      defaultClientId: cawemo
+      defaultClientLogoutUrl: "http://cawemo.127.0.0.1.nip.io/logout"
+      defaultClientName: Cawemo
+      defaultClientSecret: 91FCCFAF21A44B6C9AC7BA1D1FEC3456
+      emailNoreplySender: "cawemo@your-company.com"
+      emailSender: "cawemo@your-company.com"
+      emailSenderName: Cawemo
+      emailSupport: "cawemo@your-company.com"
+      enforceHttps: false
+      frontEndUrl: "http://router.127.0.0.1.nip.io"
+      smtpHost: mailhog
+      smtpPort: "1025"
+      smtpPassword: cawemo
+      smtpUser: cawemo
+      smtpEnableTLS: "false"
+      tokenIssuer: "http://router.127.0.0.1.nip.io"
+      tokenSigningKeySecretName: demo-cawemo-iam-backend-token
+    service:
+      type: ClusterIP
+      port: 8080
+      portName: http
+
+  # IAM Frontend Configs
+  frontend:
+    enabled: true
+    debug: true
+    # EE image pull in configuration
+    containerName: iam-frontend
+    image:
+      repository: registry.camunda.cloud/iam-ee/iam-frontend
+      tag: latest
+      pullPolicy: IfNotPresent
+      pullSecrets:
+        - name: registry-credentials
+    env:
+      backend: "/api"
+      base: "http://router.127.0.0.1.nip.io"
+      emailNoreplySender: cawemo@your-company.com
+      emailSupport: cawemo@your-company.com
+    service:
+      type: ClusterIP
+      port: 80
+      portName: http
+
+  # IAM Router Configs
+  router:
+    enabled: true
+    debug: true
+    # image pull in configuration
+    containerName: iam-router
+    image:
+      repository: registry.camunda.cloud/iam-ee/iam-router
+      tag: latest
+      pullPolicy: IfNotPresent
+      pullSecrets:
+        - name: registry-credentials
+    env:
+      backEnd: "demo-cawemo-iam-backend:8080"
+      frontend: "demo-cawemo-iam-frontend"
+    # Kubernetes Service Resource
+    service:
+      type: ClusterIP
+      port: 80
+      portName: http
+    # Kubernetes Ingress Resource
+    ingress:
+      enabled: true
+      # see more config options https://kubernetes.github.io/ingress-nginx/examples/affinity/cookie/
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+      annotations: {
+        nginx.ingress.kubernetes.io/ingress.class: nginx,
+        nginx.ingress.kubernetes.io/affinity: "cookie",
+        nginx.ingress.kubernetes.io/affinity-mode: "persistent",
+        nginx.ingress.kubernetes.io/session-cookie-expires: "172800",
+        nginx.ingress.kubernetes.io/session-cookie-max-age: "172800",
+      }
+      serviceName: demo-cawemo-iam-router
+      servicePort: 80
+      hosts:
+        - host: router.127.0.0.1.nip.io
+          paths: ["/"]
+      tls: []
+      #  - secretName: tls
+      #    hosts:
+      #      - cawemo.local
+
+
+smtp:
+  enabled: true
+  debug: false
+  containerName: smtp
+  image:
+    repository: mailhog/mailhog
+    tag:
+    pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: registry-credentials
+  env:
+  service:
+    type: ClusterIP
+    smtpPort: 1025
+    smtpPortName: smtp
+    httpPort: 8025
+    httpPortName: http
+
+adminer:
+  enabled: true
+  debug: false
+  containerName: adminer
+  image:
+    repository: adminer
+    tag:
+    pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: registry-credentials
+  env:
+  service:
+    type: ClusterIP
+    port: 8080
+    portName: http
+
+websockets:
+  enabled: true
+  debug: false
+  containerName: websockets
+  image:
+    repository: registry.camunda.cloud/cawemo-ee/cawemo-websockets
+    tag: latest
+    pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: registry-credentials
+  env:
+    appName: "Cawemo WebSockets"
+    appDebug: "false"
+    pusherAppId: "1"
+    pusherAppKey: "1"
+    pusherAppSecret: "79B0399807C5436E84056589A1E25F1F"
+    pusherAppCluster: "cawemo"
+  service:
+    type: ClusterIP
+    port: 8060
+    portName: http
+  ingress:
+    enabled: true
+    # see more config options https://kubernetes.github.io/ingress-nginx/examples/affinity/cookie/
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    annotations: {
+      nginx.ingress.kubernetes.io/ingress.class: nginx,
+      nginx.ingress.kubernetes.io/affinity: "cookie",
+      nginx.ingress.kubernetes.io/affinity-mode: "persistent",
+      nginx.ingress.kubernetes.io/session-cookie-expires: "172800",
+      nginx.ingress.kubernetes.io/session-cookie-max-age: "172800",
+    }
+    serviceName: demo-cawemo-websockets
+    servicePort: 8060
+    hosts:
+      - host: websockets.127.0.0.1.nip.io
+        paths: ["/"]
+    tls: []
+    #  - secretName: tls
+    #    hosts:
+    #      - cawemo.local
+
+restapi:
+  enabled: true
+  debug: false
+  containerName: restapi
+  image:
+    repository: registry.camunda.cloud/cawemo-ee/cawemo-restapi
+    tag: latest
+    pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: registry-credentials
+  env:
+    javaOpts: -Xmx256m
+    dbHost: cawemo-postgresql.postgres.svc.cluster.local
+    dbPort: 5432
+    dbName: workflow
+    dbUser: workflow
+    dbPassword: workflow
+    mailHost: smtp
+    mailPort: 1025
+    mailUser: cawemo
+    mailPassword: cawemo
+    mailEnableTLS: false
+    mailFromAddress: cawemo@your-company.com
+    mailFromName: cawemo
+    cawemoMigrate: "true"
+    websocketAppId: 1
+    websocketKey: 1
+    websocketSecret: 79B0399807C5436E84056589A1E25F1F
+    websocketHost: demo-cawemo-websockets
+    websocketPort: 8060
+    serverCacheTemplates: "true"
+    serverShutDownTimeout: 9000
+    cawemoServerUrl: "http://cawemo.127.0.0.1.nip.io"
+    cleintThemeColorsPrimary: "#2875cc"
+    clientThemeColorsSecondary: "#00bfa5"
+    clientThemeColorsAccent: "#343434"
+    licenseFilePath: /config.key
+  service:
+    type: ClusterIP
+    port: 8081
+    portName: http
+
+webapp:
+  enabled: true
+  debug: true
+  containerName: webapp
+  image:
+    repository: registry.camunda.cloud/cawemo-ee/cawemo-webapp
+    tag: latest
+    pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: registry-credentials
+  env:
+    nodeEnv: production
+    nodeOptions: "--max-old-space-size=128"
+    productContext: enterprise
+    restAPIUrl: "http://demo-cawemo-restapi:8081"
+    restManagementApiUrl: "http://demo-cawemo-restapi:8091"
+    clientWebsocketKey: 1
+    clientWebsocketHost: "websockets.127.0.0.1.nip.io"
+    clientWebsocketPort: 80
+    clientWebsocketForceTLS: false
+    cleintThemeColorPrimary: "#2875cc"
+    cleintThemeColorSecondary: "#00bfa5"
+    clientThemeColorAccent: "#343434"
+    clientThemeLogoUrl: /img/enterprise-default.min.svg
+    serverSessionCookieSecret: 5DE53D45DD5A46C089A6E3FD487D1844
+    webSocketAppId: 1
+    webSocketKey: 1
+    websocketHost: "websockets.127.0.0.1.nip.io"
+    webSocketSecret: 79B0399807C5436E84056589A1E25F1F
+    serverHttpsOnly: false
+    serverHost: "cawemo.127.0.0.1.nip.io"
+    serverUrl: "http://cawemo.127.0.0.1.nip.io"
+    iamBaseUrl: "http://router.127.0.0.1.nip.io"
+    iamBackchannelUrl: "http://demo-cawemo-iam-router/api"
+    iamCawemoClientId: cawemo
+    iamCawemoClientSecret: 91FCCFAF21A44B6C9AC7BA1D1FEC3456
+  service:
+    type: ClusterIP
+    port: 8070
+    portName: http
+  # Kubernetes Ingress Resource
+  ingress:
+    enabled: true
+      # see more config options https://kubernetes.github.io/ingress-nginx/examples/affinity/cookie/
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    annotations: {
+      nginx.ingress.kubernetes.io/ingress.class: nginx,
+      nginx.ingress.kubernetes.io/affinity: "cookie",
+      nginx.ingress.kubernetes.io/affinity-mode: "persistent",
+      nginx.ingress.kubernetes.io/session-cookie-expires: "172800",
+      nginx.ingress.kubernetes.io/session-cookie-max-age: "172800",
+    }
+    serviceName: demo-cawemo-webapp
+    servicePort: 8070
+    hosts:
+      - host: cawemo.127.0.0.1.nip.io
+        paths: ["/"]
+    tls: []
+    #  - secretName: tls
+    #    hosts:
+    #      - cawemo.local
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# See link below to install nginx controller
+# https://artifacthub.io/packages/helm/bitnami/nginx-ingress-controller
+
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources: {}
+  # If you do want to specify resources, uncomment the following lines,
+  # adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# Autoscaling configurations
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "camunda-cawemo.fullname" . }}
+  name: {{ include "cawemo.fullname" . }}
   labels:
-    {{- include "camunda-cawemo.labels" . | nindent 4 }}
+    {{- include "cawemo.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "camunda-cawemo.fullname" . }}
+    name: {{ include "cawemo.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:

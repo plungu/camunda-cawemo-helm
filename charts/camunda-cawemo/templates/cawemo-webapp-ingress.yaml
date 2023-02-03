@@ -1,16 +1,12 @@
 {{- if .Values.webapp.ingress.enabled -}}
 {{- $fullName := .Values.webapp.ingress.serviceName -}}
 {{- $svcPort := .Values.webapp.ingress.servicePort -}}
-{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
-{{- end }}
+apiVersion: {{ (include "cawemo.ingress.apiVersion" .) }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}
   labels:
-    {{- include "camunda-cawemo.labels" . | nindent 4 }}
+    {{- include "cawemo.labels" . | nindent 4 }}
   {{- with .Values.webapp.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -33,9 +29,12 @@ spec:
         paths:
           {{- range .paths }}
           - path: {{ . }}
+            pathType: Prefix
             backend:
-              serviceName: {{ $fullName }}
-              servicePort: {{ $svcPort }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $svcPort }}
           {{- end }}
     {{- end }}
-  {{- end }}
+{{- end }}

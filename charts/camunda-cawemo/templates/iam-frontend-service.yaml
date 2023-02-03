@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.iam.frontend.containerName }}
+  name: {{ include "cawemo.fullname" . }}-{{ .Values.iam.frontend.containerName }}
   labels:
-    {{- include "camunda-cawemo.labels" . | nindent 4 }}
-    {{- include "camunda-cawemo-iam-frontend.labels" . | nindent 4 }}
+    {{- include "cawemo.labels" . | nindent 4 }}
+    {{- include "iam-frontend.labels" . | nindent 4 }}
 
 spec:
   type: {{ .Values.iam.frontend.service.type }}
@@ -15,5 +15,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "camunda-cawemo-iam-frontend.selectorLabels" . | nindent 4 }}
+    {{- include "iam-frontend.selectorLabels" . | nindent 4 }}
 {{- end }}

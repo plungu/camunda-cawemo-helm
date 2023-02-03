@@ -1,16 +1,16 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "camunda-cawemo.name" -}}
+{{- define "cawemo.name" -}}
 {{- default .Chart.Name .Values.general.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
-
+gdfgdfg
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "camunda-cawemo.fullname" -}}
+{{- define "cawemo.fullname" -}}
 {{- if .Values.general.fullnameOverride }}
 {{- .Values.general.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "camunda-cawemo.chart" -}}
+{{- define "cawemo.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "camunda-cawemo.labels" -}}
-helm.sh/chart: {{ include "camunda-cawemo.chart" . }}
-{{ include "camunda-cawemo.selectorLabels" . }}
+{{- define "cawemo.labels" -}}
+helm.sh/chart: {{ include "cawemo.chart" . }}
+{{ include "cawemo.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,109 +45,124 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Deployment Specific labels
 */}}
-{{- define "camunda-cawemo-iam-frontend.labels" -}}
-{{ include "camunda-cawemo-iam-frontend.selectorLabels" . }}
+{{- define "iam-frontend.labels" -}}
+{{ include "iam-frontend.selectorLabels" . }}
 {{- end }}
 
-{{- define "camunda-cawemo-iam-backend.labels" -}}
-{{ include "camunda-cawemo-iam-backend.selectorLabels" . }}
+{{- define "iam-backend.labels" -}}
+{{ include "iam-backend.selectorLabels" . }}
 {{- end }}
 
-{{- define "camunda-cawemo-iam-router.labels" -}}
-{{ include "camunda-cawemo-iam-router.selectorLabels" . }}
+{{- define "iam-router.labels" -}}
+{{ include "iam-router.selectorLabels" . }}
 {{- end }}
 
-{{- define "camunda-cawemo-websockets.labels" -}}
-{{ include "camunda-cawemo-websockets.selectorLabels" . }}
+{{- define "websockets.labels" -}}
+{{ include "websockets.selectorLabels" . }}
 {{- end }}
 
-{{- define "camunda-cawemo-restapi.labels" -}}
-{{ include "camunda-cawemo-restapi.selectorLabels" . }}
+{{- define "restapi.labels" -}}
+{{ include "restapi.selectorLabels" . }}
 {{- end }}
 
-{{- define "camunda-cawemo-adminer.labels" -}}
-{{ include "camunda-cawemo-adminer.selectorLabels" . }}
+{{- define "adminer.labels" -}}
+{{ include "adminer.selectorLabels" . }}
 {{- end }}
 
-{{- define "camunda-cawemo-smtp.labels" -}}
-{{ include "camunda-cawemo-smtp.selectorLabels" . }}
+{{- define "smtp.labels" -}}
+{{ include "smtp.selectorLabels" . }}
 {{- end }}
 
-{{- define "camunda-cawemo-webapp.labels" -}}
-{{ include "camunda-cawemo-webapp.selectorLabels" . }}
+{{- define "webapp.labels" -}}
+{{ include "webapp.selectorLabels" . }}
 {{- end }}
 
 
 {{/*
 Selector labels
 */}}
-{{- define "camunda-cawemo.selectorLabels" -}}
+{{- define "cawemo.selectorLabels" -}}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Adminer Selector labels
 */}}
-{{- define "camunda-cawemo-adminer.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.adminer.containerName }}
+{{- define "adminer.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cawemo.name" . }}-{{ .Values.adminer.containerName }}
 {{- end }}
 
 {{/*
 SMTP Selector labels
 */}}
-{{- define "camunda-cawemo-smtp.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.smtp.containerName }}
+{{- define "smtp.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cawemo.name" . }}-{{ .Values.smtp.containerName }}
 {{- end }}
 
 {{/*
 IAM Front-End Selector labels
 */}}
-{{- define "camunda-cawemo-iam-frontend.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.iam.frontend.containerName }}
+{{- define "iam-frontend.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cawemo.name" . }}-{{ .Values.iam.frontend.containerName }}
 {{- end }}
 
 {{/*
 IAM Back-End Selector labels
 */}}
-{{- define "camunda-cawemo-iam-backend.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.iam.backend.containerName }}
+{{- define "iam-backend.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cawemo.name" . }}-{{ .Values.iam.backend.containerName }}
 {{- end }}
 
 {{/*
 IAM Router Selector labels
 */}}
-{{- define "camunda-cawemo-iam-router.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.iam.router.containerName }}
+{{- define "iam-router.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cawemo.name" . }}-{{ .Values.iam.router.containerName }}
 {{- end }}
 
 {{/*
 Websockets Selector labels
 */}}
-{{- define "camunda-cawemo-websockets.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.websockets.containerName }}
+{{- define "websockets.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cawemo.name" . }}-{{ .Values.websockets.containerName }}
 {{- end }}
 
 {{/*
 Websockets Selector labels
 */}}
-{{- define "camunda-cawemo-restapi.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.restapi.containerName }}
+{{- define "restapi.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cawemo.name" . }}-{{ .Values.restapi.containerName }}
 {{- end }}
 
 {{/*
 Websockets Selector labels
 */}}
-{{- define "camunda-cawemo-webapp.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "camunda-cawemo.name" . }}-{{ .Values.webapp.containerName }}
+{{- define "webapp.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cawemo.name" . }}-{{ .Values.webapp.containerName }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "camunda-cawemo.serviceAccountName" -}}
+{{- define "cawemo.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "camunda-cawemo.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "cawemo.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Return the appropriate apiVersion for ingress according to Kubernetes version.
+*/}}
+{{- define "cawemo.ingress.apiVersion" -}}
+{{- if .Values.webapp.ingress.enabled -}}
+{{- if semverCompare "<1.14-0" .Capabilities.KubeVersion.Version -}}
+{{- print "extensions/v1beta1" -}}
+{{- else if semverCompare "<1.19-0" .Capabilities.KubeVersion.Version -}}
+{{- print "networking.k8s.io/v1beta1" -}}
+{{- else -}}
+{{- print "networking.k8s.io/v1" -}}
+{{- end }}
 {{- end }}
 {{- end }}

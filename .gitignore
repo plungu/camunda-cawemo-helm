@@ -40,6 +40,7 @@ bin/*
 .project
 /.bin
 /_test/secrets/*.json
+**license.txt
 
 # OSX leaves these everywhere on SMB shares
 ._*

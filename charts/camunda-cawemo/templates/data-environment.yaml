@@ -2,7 +2,7 @@
 {{/*kind: ConfigMap*/}}
 {{/*metadata:*/}}
 {{/*  labels:*/}}
-{{/*    {{- include "camunda-cawemo.labels" . | nindent 4 }}*/}}
+{{/*    {{- include "cawemo.labels" . | nindent 4 }}*/}}
 {{/*  name: environment-config*/}}
 {{/*data:*/}}
 {{/*    environment-config.yaml: |*/}}

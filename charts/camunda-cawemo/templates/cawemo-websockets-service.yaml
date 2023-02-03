@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "camunda-cawemo.fullname" . }}-{{ .Values.websockets.containerName }}
+  name: {{ include "cawemo.fullname" . }}-{{ .Values.websockets.containerName }}
   labels:
-    {{- include "camunda-cawemo.labels" . | nindent 4 }}
-    {{- include "camunda-cawemo-websockets.labels" . | nindent 4 }}
+    {{- include "cawemo.labels" . | nindent 4 }}
+    {{- include "websockets.labels" . | nindent 4 }}
 
 spec:
   type: {{ .Values.websockets.service.type }}
@@ -15,5 +15,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "camunda-cawemo-websockets.selectorLabels" . | nindent 4 }}
+    {{- include "websockets.selectorLabels" . | nindent 4 }}
 {{- end }}

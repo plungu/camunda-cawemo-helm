@@ -18,21 +18,21 @@ A Helm chart for Camunda BPM, the open-source BPM platform.
 ```sh
 $ helm repo add camunda https://helm.camunda.cloud
 $ helm repo update
-$ helm install demo camunda/camunda-cawemo
+$ helm install demo camunda/cawemo
 ```
 
 ## Links
 
 * Camunda homepage: https://camunda.com
-* Camunda BPM Platform repo: https://github.com/camunda/camunda-cawemo
-* Camunda BPM Platform Docker image: https://github.com/camunda/docker-camunda-cawemo
+* Camunda BPM Platform repo: https://github.com/camunda/cawemo
+* Camunda BPM Platform Docker image: https://github.com/camunda/docker-cawemo
 
 ## Configuration
 
 ### Image
 
 Camunda BPM open-source Docker image comes in 3 distributions `tomcat`, `wildfly`, and `run`.
-Each distro has different tags, check the list of [supported tags/releases](https://github.com/camunda/docker-camunda-cawemo#supported-tagsreleases) by the docker project for more details.
+Each distro has different tags, check the list of [supported tags/releases](https://github.com/camunda/docker-cawemo#supported-tagsreleases) by the docker project for more details.
 
 The image used in the chart is `tomcat-latest`.
 
@@ -54,7 +54,7 @@ First, create the secret that has the database credentials.
 
 ```sh
 $ kubectl create secret generic                 \
-    camunda-cawemo-postgresql-credentials \
+    postgresql-credentials \
     --from-literal=DB_USERNAME=foo              \
     --from-literal=DB_PASSWORD=bar
 ```
@@ -67,7 +67,7 @@ database:
     enabled: false
   external:
     enabled: true
-    credentialsSecertName: camunda-cawemo-postgresql-credentials
+    credentialsSecertName: postgresql-credentials
     driver: "org.postgresql.Driver"
     url: "jdbc:postgresql://cambpm-demo-db:5432/process-engine"
 ```

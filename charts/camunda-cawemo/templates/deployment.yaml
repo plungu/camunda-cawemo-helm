@@ -1,16 +1,16 @@
 {{/*apiVersion: apps/v1*/}}
 {{/*kind: Deployment*/}}
 {{/*metadata:*/}}
-{{/*  name: {{ include "camunda-cawemo.fullname" . }}*/}}
+{{/*  name: {{ include "cawemo.fullname" . }}*/}}
 {{/*  labels:*/}}
-{{/*    {{- include "camunda-cawemo.labels" . | nindent 4 }}*/}}
+{{/*    {{- include "cawemo.labels" . | nindent 4 }}*/}}
 {{/*spec:*/}}
 {{/*  {{- if not .Values.autoscaling.enabled }}*/}}
 {{/*  replicas: {{ .Values.general.replicaCount }}*/}}
 {{/*  {{- end }}*/}}
 {{/*  selector:*/}}
 {{/*    matchLabels:*/}}
-{{/*      {{- include "camunda-cawemo.selectorLabels" . | nindent 6 }}*/}}
+{{/*      {{- include "cawemo.selectorLabels" . | nindent 6 }}*/}}
 {{/*  template:*/}}
 {{/*    metadata:*/}}
 {{/*      {{- with .Values.podAnnotations }}*/}}
@@ -18,7 +18,7 @@
 {{/*        {{- toYaml . | nindent 8 }}*/}}
 {{/*      {{- end }}*/}}
 {{/*      labels:*/}}
-{{/*        {{- include "camunda-cawemo.selectorLabels" . | nindent 8 }}*/}}
+{{/*        {{- include "cawemo.selectorLabels" . | nindent 8 }}*/}}
 
 {{/*    spec:*/}}
 
@@ -27,7 +27,7 @@
 {{/*        {{- toYaml . | nindent 8 }}*/}}
 {{/*      {{- end }}*/}}
 
-{{/*      serviceAccountName: {{ include "camunda-cawemo.serviceAccountName" . }}*/}}
+{{/*      serviceAccountName: {{ include "cawemo.serviceAccountName" . }}*/}}
 
 {{/*      securityContext:*/}}
 {{/*        {{- toYaml .Values.podSecurityContext | nindent 8 }}*/}}
@@ -76,16 +76,16 @@
 
 {{/*          - mountPath: /cawemo/config/OptimizeLicense.txt*/}}
 {{/*            subPath: OptimizeLicense.txt*/}}
-{{/*            name: cawemo-license*/}}
+{{/*            name: license*/}}
 
 {{/*      volumes:*/}}
 {{/*      - name: environment-config*/}}
 {{/*        configMap:*/}}
 {{/*          name: environment-config*/}}
 
-{{/*      - name: cawemo-license*/}}
+{{/*      - name: license*/}}
 {{/*        secret:*/}}
-{{/*          secretName: cawemo-license*/}}
+{{/*          secretName: license*/}}
 
 {{/*      {{- with .Values.nodeSelector }}*/}}
 {{/*      nodeSelector:*/}}
