@@ -46,9 +46,9 @@ dbPassword ?= workflow
 # Pull Secret
 pullSecretName ?= registry-credentials
 dockerServer ?= registry.camunda.cloud
-dockerUsername ?= paul.lungu
-dockerPassword ?= poft3mal\!tair_CLOG
-dockerEmail ?= paul.lungu@camunda.com
+dockerUsername ?=
+dockerPassword ?=
+dockerEmail ?= 
 
 # license secret
 licenseSecretName ?= license
